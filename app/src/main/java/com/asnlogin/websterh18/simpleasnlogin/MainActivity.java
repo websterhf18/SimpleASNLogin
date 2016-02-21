@@ -3,6 +3,7 @@ package com.asnlogin.websterh18.simpleasnlogin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
@@ -13,7 +14,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 
-public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private SessionManager session;
     private GoogleApiClient mGoogleApiClient;
     @Override
@@ -40,6 +41,16 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 logoutUser();
             }
         });
+        Button gomenu = (Button)findViewById(R.id.gomenu);
+        gomenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MenuActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
 
 
     }
