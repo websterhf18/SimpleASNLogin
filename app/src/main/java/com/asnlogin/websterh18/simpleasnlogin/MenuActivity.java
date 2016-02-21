@@ -1,5 +1,6 @@
 package com.asnlogin.websterh18.simpleasnlogin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,16 +15,37 @@ import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.widget.TextView;
 
-public class MenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import com.facebook.FacebookSdk;
+import com.facebook.LoggingBehavior;
+import com.facebook.login.LoginManager;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.plus.Plus;
+
+public class MenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     NavigationView navigationView = null;
     Toolbar toolbar = null;
 
+    private SessionManager session;
+    private GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(this);
+        FacebookSdk.addLoggingBehavior(LoggingBehavior.REQUESTS);
         setContentView(R.layout.activity_menu);
+        //Google plus api
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Plus.API, Plus.PlusOptions.builder().build())
+                .addScope(Plus.SCOPE_PLUS_LOGIN).build();
 
+        session = new SessionManager(this);
+        if (!session.isLoggedIn()) {
+            logoutUser();
+        }
         //Set the fragment initially
         MainFragment fragment = new MainFragment();
         android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -53,10 +75,34 @@ public class MenuActivity extends AppCompatActivity implements NavigationView.On
 
         //How to change elements in the header programatically
         //View headerView = navigationView.getHeaderView(0);
-        //TextView emailText = (TextView) headerView.findViewById(R.id.email);
-        //emailText.setText("newemail@email.com");
+        TextView emailText = (TextView) navigationView.findViewById(R.id.email);
+        emailText.setText("newemail@email.com");
 
         navigationView.setNavigationItemSelectedListener(this);
+    }
+    //metodos google plus api
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+    @Override
+    public void onConnected(Bundle bundle) {
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+    }
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
     @Override
@@ -67,13 +113,6 @@ public class MenuActivity extends AppCompatActivity implements NavigationView.On
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
     }
 
     @Override
@@ -115,16 +154,32 @@ public class MenuActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.close_session) {
+            logoutUser();
+        } //else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_share) {
+        //} else if (id == R.id.nav_send) {
 
-        } else if (id == R.id.nav_send) {
-
-        }
+        //}
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    private void logoutUser() {
+        session.setNameuser("");
+        session.setLogin(false);
+        //Logout Google plus
+        if (mGoogleApiClient.isConnected()) {
+            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+            mGoogleApiClient.disconnect();
+            mGoogleApiClient.connect();
+        }
+        //Logout Facebook
+        LoginManager.getInstance().logOut();
+        // Launching the login activity
+        Intent intent = new Intent(MenuActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

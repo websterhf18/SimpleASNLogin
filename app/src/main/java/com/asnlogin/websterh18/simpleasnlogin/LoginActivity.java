@@ -106,7 +106,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void gotoHome(){
         showProgressDialog("", "Iniciando sesion...");
         session.setLogin(true);
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        Intent intent = new Intent(LoginActivity.this, MenuActivity.class);
         startActivity(intent);
         finish();
     }
@@ -120,7 +120,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         if (session.isLoggedIn()) {
             // User is already logged in. Take him to main activity
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            Intent intent = new Intent(LoginActivity.this, MenuActivity.class);
             startActivity(intent);
             finish();
         }
@@ -505,7 +505,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             if (success) {
                 //Toast.makeText(LoginActivity.this, "Si dio", Toast.LENGTH_LONG ).show();
                 session.setLogin(true);
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                Intent intent = new Intent(LoginActivity.this, MenuActivity.class);
                 startActivity(intent);
                 finish();
 
