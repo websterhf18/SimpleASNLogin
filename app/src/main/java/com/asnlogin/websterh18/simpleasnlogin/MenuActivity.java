@@ -9,18 +9,27 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphRequestAsyncTask;
+import com.facebook.GraphResponse;
 import com.facebook.LoggingBehavior;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
+
+import org.json.JSONObject;
 
 public class MenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -29,6 +38,8 @@ public class MenuActivity extends AppCompatActivity implements NavigationView.On
 
     private SessionManager session;
     private GoogleApiClient mGoogleApiClient;
+    private TextView usernameTextview;
+    private String username;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,10 +86,43 @@ public class MenuActivity extends AppCompatActivity implements NavigationView.On
 
         //How to change elements in the header programatically
         //View headerView = navigationView.getHeaderView(0);
-        TextView emailText = (TextView) navigationView.findViewById(R.id.email);
-        emailText.setText("newemail@email.com");
+        //TextView emailText = (TextView) navigationView.findViewById(R.id.email);
+        //emailText.setText("newemail@email.com");
+        if(session.getNameuser().equals("")){
+            getUserFB();
+            //textactivity = "es por facebook";
+            username = session.getNameuser();
+        }else{
+            username = session.getNameuser();
+            usernameTextview = (TextView) navigationView.findViewById(R.id.email);
+            usernameTextview.setText(username);
+        }
 
         navigationView.setNavigationItemSelectedListener(this);
+    }
+    private void getUserFB(){
+        GraphRequest request = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+            @Override
+            public void onCompleted(JSONObject object, GraphResponse response) {
+                // Insert your code here
+                try {
+                    Log.d("Respuesta", response.toString());
+                    String testjason = response.getJSONObject().getString("email");
+                    session.setNameuser(testjason);
+                    navigationView = (NavigationView) findViewById(R.id.nav_view);
+                    usernameTextview = (TextView) navigationView.findViewById(R.id.email);
+                    usernameTextview.setText(testjason);
+
+                } catch (Exception e) {
+
+                }
+
+            }
+        });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name,email");
+        request.setParameters(parameters);
+        request.executeAsync();
     }
     //metodos google plus api
     protected void onStart() {
@@ -94,6 +138,24 @@ public class MenuActivity extends AppCompatActivity implements NavigationView.On
     }
     @Override
     public void onConnected(Bundle bundle) {
+        try {
+            if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
+                Person currentPerson = Plus.PeopleApi
+                        .getCurrentPerson(mGoogleApiClient);
+                //String personName = currentPerson.getDisplayName();
+                String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+                session.setNameuser(email);
+                //session.setLogin(true);
+                username = session.getNameuser();
+                usernameTextview = (TextView) navigationView.findViewById(R.id.email);
+                usernameTextview.setText(username);
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "Person information is null", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

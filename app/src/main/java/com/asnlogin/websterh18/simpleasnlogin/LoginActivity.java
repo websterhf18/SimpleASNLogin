@@ -59,6 +59,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -151,6 +152,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             }
         });
+        //loginGoogleBtn.setSize(SignInButton.SIZE_ICON_ONLY);
         // Initializing google plus api client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -171,6 +173,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         //Boton facebook
         LoginButton facebookbtn = (LoginButton) findViewById(R.id.facebookbtn);
         // Callback registration
+        facebookbtn.setReadPermissions(Arrays.asList("email"));
         facebookbtn.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {

@@ -38,7 +38,7 @@ public class SessionManager {
         editor.putString(USER_NAME_TAG, nameuser);
         editor.commit();
 
-        //Log.d("Nombre sesion", nameuser);
+        Log.d("Nombre sesion", nameuser);
 
     }
     public String getNameuser(){
